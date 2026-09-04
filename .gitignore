@@ -12,7 +12,6 @@ dist/
 !.env.example
 
 # local data
-data/
 *.log
 
 # editor/OS
