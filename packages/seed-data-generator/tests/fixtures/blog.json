@@ -1,0 +1,62 @@
+{
+  "enums": [{ "name": "Role", "values": ["ADMIN", "USER"] }],
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        {
+          "name": "id",
+          "type": "Int",
+          "isArray": false,
+          "isOptional": false,
+          "attributes": { "id": true, "default": "autoincrement()" }
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "isArray": false,
+          "isOptional": false,
+          "attributes": { "unique": true }
+        },
+        { "name": "name", "type": "String", "isArray": false, "isOptional": false, "attributes": {} },
+        { "name": "city", "type": "String", "isArray": false, "isOptional": true, "attributes": {} },
+        {
+          "name": "role",
+          "type": "Role",
+          "isArray": false,
+          "isOptional": false,
+          "attributes": { "default": "USER" }
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "isArray": false,
+          "isOptional": false,
+          "attributes": { "default": "now()" }
+        },
+        { "name": "posts", "type": "Post", "isArray": true, "isOptional": false, "attributes": {} }
+      ]
+    },
+    {
+      "name": "Post",
+      "fields": [
+        {
+          "name": "id",
+          "type": "Int",
+          "isArray": false,
+          "isOptional": false,
+          "attributes": { "id": true, "default": "autoincrement()" }
+        },
+        { "name": "title", "type": "String", "isArray": false, "isOptional": false, "attributes": {} },
+        { "name": "authorId", "type": "Int", "isArray": false, "isOptional": false, "attributes": {} },
+        {
+          "name": "author",
+          "type": "User",
+          "isArray": false,
+          "isOptional": false,
+          "attributes": { "relation": { "fields": ["authorId"], "references": ["id"] } }
+        }
+      ]
+    }
+  ]
+}

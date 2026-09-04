@@ -1,0 +1,29 @@
+[
+  {
+    "runId": "run-1",
+    "tests": [
+      { "classname": "com.example.FooTest", "name": "flaky", "status": "passed" },
+      { "classname": "com.example.FooTest", "name": "broken", "status": "failed" },
+      { "classname": "com.example.BarTest", "name": "stable", "status": "passed" },
+      { "classname": "com.example.BarTest", "name": "sometimesSkipped", "status": "passed" }
+    ]
+  },
+  {
+    "runId": "run-2",
+    "tests": [
+      { "classname": "com.example.FooTest", "name": "flaky", "status": "failed" },
+      { "classname": "com.example.FooTest", "name": "broken", "status": "failed" },
+      { "classname": "com.example.BarTest", "name": "stable", "status": "passed" },
+      { "classname": "com.example.BarTest", "name": "sometimesSkipped", "status": "skipped" }
+    ]
+  },
+  {
+    "runId": "run-3",
+    "tests": [
+      { "classname": "com.example.FooTest", "name": "flaky", "status": "passed" },
+      { "classname": "com.example.FooTest", "name": "broken", "status": "failed" },
+      { "classname": "com.example.BarTest", "name": "stable", "status": "passed" },
+      { "classname": "com.example.BarTest", "name": "sometimesSkipped", "status": "failed" }
+    ]
+  }
+]

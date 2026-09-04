@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# env files - never commit real secrets
+.env
+.env.*
+!.env.example
+
+# local data
+data/
+*.log
+
+# editor/OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# test/coverage
+coverage/

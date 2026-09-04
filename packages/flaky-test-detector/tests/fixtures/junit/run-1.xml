@@ -1,0 +1,8 @@
+<testsuite name="ExampleSuite" tests="4" failures="1">
+  <testcase classname="com.example.FooTest" name="flaky" time="0.01"/>
+  <testcase classname="com.example.FooTest" name="broken" time="0.02">
+    <failure message="boom">stack trace</failure>
+  </testcase>
+  <testcase classname="com.example.BarTest" name="stable" time="0.01"/>
+  <testcase classname="com.example.BarTest" name="sometimesSkipped" time="0.01"/>
+</testsuite>

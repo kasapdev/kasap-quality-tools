@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Users API
+  version: "1.0.0"
+paths:
+  /users:
+    get:
+      operationId: listUsers
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users/{id}:
+    get:
+      operationId: getUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A single user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+  /users/legacy:
+    get:
+      operationId: listUsersLegacy
+      responses:
+        "200":
+          description: Legacy listing
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        nickname:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, banned]
+    NewUser:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+        referralCode:
+          type: string
+    Deprecated:
+      type: object
+      properties:
+        legacyField:
+          type: string
