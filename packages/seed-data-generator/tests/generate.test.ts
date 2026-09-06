@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateSeedData } from "../src/generate.js";
+import { generateSeedData, parseCountOption } from "../src/generate.js";
 import type { ParsedSchema } from "../src/schema.js";
 
 describe("generateSeedData", () => {
@@ -90,5 +90,56 @@ describe("generateSeedData", () => {
   it("produces no rows for any model when count is 0", () => {
     const data = generateSeedData(schema, { count: 0 });
     expect(data).toEqual({ Parent: [], Child: [] });
+  });
+
+  it("applies a per-model count map, independently per model", () => {
+    const data = generateSeedData(schema, { count: { Parent: 4, Child: 2 } });
+    expect(data["Parent"]).toHaveLength(4);
+    expect(data["Child"]).toHaveLength(2);
+  });
+
+  it("falls back to defaultCount (10) for a model left out of a per-model count map", () => {
+    const data = generateSeedData(schema, { count: { Parent: 3 } });
+    expect(data["Parent"]).toHaveLength(3);
+    expect(data["Child"]).toHaveLength(10);
+  });
+
+  it("falls back to a custom defaultCount for a model left out of a per-model count map", () => {
+    const data = generateSeedData(schema, { count: { Parent: 3 }, defaultCount: 1 });
+    expect(data["Parent"]).toHaveLength(3);
+    expect(data["Child"]).toHaveLength(1);
+  });
+});
+
+describe("parseCountOption", () => {
+  it("parses a bare non-negative integer as a flat count", () => {
+    expect(parseCountOption("10")).toBe(10);
+    expect(parseCountOption("0")).toBe(0);
+    expect(parseCountOption("  25  ")).toBe(25);
+  });
+
+  it("parses comma-separated Model=count pairs into a per-model map", () => {
+    expect(parseCountOption("User=50,Post=200")).toEqual({ User: 50, Post: 200 });
+  });
+
+  it("trims whitespace around model names and counts", () => {
+    expect(parseCountOption(" User = 50 , Post=200 ")).toEqual({ User: 50, Post: 200 });
+  });
+
+  it("rejects a segment missing '='", () => {
+    expect(() => parseCountOption("User=50,Post")).toThrow(/Invalid --count segment "Post"/);
+  });
+
+  it("rejects a segment with a non-numeric count", () => {
+    expect(() => parseCountOption("User=abc")).toThrow(/Invalid --count segment "User=abc"/);
+  });
+
+  it("rejects a segment with an empty model name", () => {
+    expect(() => parseCountOption("=50")).toThrow(/Invalid --count segment "=50"/);
+  });
+
+  it("rejects a blank value", () => {
+    expect(() => parseCountOption("")).toThrow(/Invalid --count value/);
+    expect(() => parseCountOption("   ")).toThrow(/Invalid --count value/);
   });
 });

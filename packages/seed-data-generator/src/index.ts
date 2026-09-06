@@ -22,8 +22,8 @@ export {
 export { parsePrismaSchema } from "./prismaParser.js";
 export { parseDrizzleJson } from "./drizzleJson.js";
 
-export { generateSeedData } from "./generate.js";
-export type { GenerateOptions, GeneratedData } from "./generate.js";
+export { generateSeedData, parseCountOption } from "./generate.js";
+export type { CountOption, GenerateOptions, GeneratedData } from "./generate.js";
 
 export { escapeSqlString, formatAsJson, formatAsSql, formatData } from "./output.js";
 export type { OutputFormat } from "./output.js";
