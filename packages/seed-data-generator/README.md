@@ -125,13 +125,16 @@ seed-data-generator --schema-json ./prisma-seed-schema.json --count 25 --format 
 ```
 seed-data-generator --schema <file.prisma> --count 10 --format json [--out <file>]
 seed-data-generator --schema-json <file.json> --count 10 --format sql [--out <file>]
+seed-data-generator --schema <file.prisma> --count User=50,Post=200 --format sql [--out <file>]
 ```
 
 - Exactly one of `--schema` / `--schema-json` is required.
-- `--count <n>` — rows generated per model (default `10`). A single flat
-  count applies to every model; per-model counts (e.g.
-  `--count Model=10,Other=5`) are a possible future improvement, not
-  implemented here.
+- `--count <spec>` — rows generated per model (default `10`). Either a flat
+  non-negative integer applied to every model (`--count 25`), or a
+  comma-separated list of `Model=count` pairs for per-model control
+  (`--count User=50,Post=200`) — any model not named in the list falls back
+  to the default of `10`. Referencing a model name that isn't in the parsed
+  schema is an error.
 - `--format json|sql` — default `json`.
 - `--out <file>` — write output to a file instead of stdout.
 
@@ -188,6 +191,4 @@ official dataset (e.g. not all 81 Turkish provinces are listed).
   doesn't specify one for a given position.
 - Cycle-breaking in dependency ordering is naive (arbitrary), not a full
   heuristic solver.
-- Per-model row counts aren't supported yet — `--count` is a single flat
-  number applied to every model.
 - No network/DB calls anywhere; this is a pure offline generator.

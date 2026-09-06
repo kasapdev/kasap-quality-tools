@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { Command } from "commander";
 import { parseDrizzleJson } from "./drizzleJson.js";
-import { generateSeedData } from "./generate.js";
+import { generateSeedData, parseCountOption, type CountOption } from "./generate.js";
 import { formatData, type OutputFormat } from "./output.js";
 import { parsePrismaSchema } from "./prismaParser.js";
 import type { ParsedSchema } from "./schema.js";
@@ -24,7 +24,12 @@ program
   )
   .option("--schema <file>", "Path to a Prisma schema (.prisma) file")
   .option("--schema-json <file>", "Path to a Drizzle-export JSON schema file")
-  .option("--count <n>", "Rows to generate per model", "10")
+  .option(
+    "--count <spec>",
+    'Rows to generate per model: a flat number ("10"), or comma-separated Model=count pairs ' +
+      '("User=50,Post=200") -- models left unmentioned in the per-model form default to 10',
+    "10",
+  )
   .option("--format <format>", "Output format: json | sql", "json")
   .option("--out <file>", "Write output to a file instead of stdout")
   .action((options: CliOptions) => {
@@ -56,9 +61,11 @@ function run(options: CliOptions): void {
     return;
   }
 
-  const count = Number.parseInt(options.count, 10);
-  if (!Number.isFinite(count) || count < 0) {
-    console.error(`Error: --count must be a non-negative integer (got "${options.count}").`);
+  let count: CountOption;
+  try {
+    count = parseCountOption(options.count);
+  } catch (err) {
+    console.error(`Error: ${(err as Error).message}`);
     process.exitCode = 1;
     return;
   }
@@ -76,6 +83,16 @@ function run(options: CliOptions): void {
     console.error(`Error reading/parsing schema: ${(err as Error).message}`);
     process.exitCode = 1;
     return;
+  }
+
+  if (typeof count !== "number") {
+    const modelNames = new Set(schema.models.map((m) => m.name));
+    const unknownModels = Object.keys(count).filter((name) => !modelNames.has(name));
+    if (unknownModels.length > 0) {
+      console.error(`Error: --count references model(s) not found in the schema: ${unknownModels.join(", ")}.`);
+      process.exitCode = 1;
+      return;
+    }
   }
 
   let output: string;
