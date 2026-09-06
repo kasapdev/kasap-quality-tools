@@ -103,4 +103,21 @@ describe("runWithConcurrencyLimit", () => {
     const results = await runWithConcurrencyLimit(3, 100, async (i) => i);
     expect(results).toEqual([0, 1, 2]);
   });
+
+  it("handles a negative totalTasks by returning an empty array", async () => {
+    const results = await runWithConcurrencyLimit(-3, 5, async () => 1);
+    expect(results).toEqual([]);
+  });
+
+  it("rejects when concurrency is zero", async () => {
+    await expect(runWithConcurrencyLimit(5, 0, async (i) => i)).rejects.toThrow(
+      "concurrency must be a positive integer",
+    );
+  });
+
+  it("rejects when concurrency is negative", async () => {
+    await expect(runWithConcurrencyLimit(5, -2, async (i) => i)).rejects.toThrow(
+      "concurrency must be a positive integer",
+    );
+  });
 });

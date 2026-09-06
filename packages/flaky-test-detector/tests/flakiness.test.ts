@@ -86,6 +86,36 @@ describe("detectFlakiness", () => {
     expect(reports).toEqual([]);
   });
 
+  it("does not conflate distinct tests whose classname/name would collide under a naive join", () => {
+    // "pkg.A" + "b c" and "pkg.A b" + "c" would join to the same string
+    // "pkg.A b c" if classname/name were concatenated with a plain space.
+    // They must still be tracked as two distinct test identities.
+    const runs: RunResult[] = [
+      {
+        runId: "run-1",
+        tests: [
+          { classname: "pkg.A", name: "b c", status: "passed" },
+          { classname: "pkg.A b", name: "c", status: "passed" },
+        ],
+      },
+      {
+        runId: "run-2",
+        tests: [
+          { classname: "pkg.A", name: "b c", status: "passed" },
+          { classname: "pkg.A b", name: "c", status: "failed" },
+        ],
+      },
+    ];
+
+    expect(countDistinctTests(runs)).toBe(2);
+
+    const reports = detectFlakiness(runs);
+    // Only "pkg.A b" / "c" actually flipped; "pkg.A" / "b c" never failed.
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.classname).toBe("pkg.A b");
+    expect(reports[0]?.name).toBe("c");
+  });
+
   it("handles multiple distinct tests independently", () => {
     const runs: RunResult[] = [
       {
