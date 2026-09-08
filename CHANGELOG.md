@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- 2026-09-08: `@kasap/flaky-test-detector` (`0.1.0` → `0.2.0`) — added quarantine-list
+  generation: `selectQuarantineCandidates` filters a `detectFlakiness` report down
+  to tests exceeding a configurable flip-rate/fail-count threshold, and
+  `formatQuarantineJson`/`formatQuarantineTextList`/`formatQuarantineGrepPattern`
+  render the result as JSON, a plain-text list of `classname.name` identities, or
+  a regex alternation of test names suitable for a test runner's
+  `--grep`/`-t`/`--testNamePattern` filter. Wired into the CLI as `--quarantine`
+  (with `--quarantine-format`, `--min-flip-rate`, `--min-fail-count`). Also added
+  a `parseJUnitXml` test pinning the (previously untested but already correct)
+  precedence of `<skipped>` over a co-occurring `<failure>`/`<error>` child —
+  not a bug fix, a regression guard documenting the intended behavior.
 - 2026-09-06: `@kasap/flaky-test-detector` — added a `detectFlakiness`/`countDistinctTests`
   test case verifying that two distinct tests whose `classname`/`name` would
   collide under a naive string join (e.g. `classname: "pkg.A", name: "b c"` vs.

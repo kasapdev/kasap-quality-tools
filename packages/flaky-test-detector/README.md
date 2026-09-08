@@ -161,6 +161,72 @@ flip-rate = (number of adjacent observed-run transitions where the status change
 A test observed in fewer than 2 runs (after removing skips) can never be
 flaky, since flakiness requires at least one pass and one fail.
 
+## Quarantine list generation
+
+Once you know which tests are flaky, the next question is "which of these
+are bad enough to skip in CI until someone fixes them?" `--quarantine`
+answers that: it filters the flaky-test report down to tests that exceed a
+flakiness threshold and prints the result in a format you can feed
+straight into a test runner's skip-list or `--grep`/`-t` filter.
+
+```sh
+flaky-test-detector --json-file ./ci-results/results.json --quarantine
+```
+
+By default every flaky test qualifies (min flip-rate 0%, min fail count
+1). Narrow the list with `--min-flip-rate <percent>` and/or
+`--min-fail-count <n>` to only quarantine the most disruptive tests:
+
+```sh
+flaky-test-detector --junit-dir ./ci-results/junit --quarantine --min-flip-rate 50 --min-fail-count 3
+```
+
+`--quarantine-format` selects the output shape (default `text`):
+
+- `text` — one `classname.name` identity per line (or bare `name` when
+  `classname` is `""`), sorted by descending flip-rate:
+
+  ```
+  com.example.FooTest.flaky
+  com.example.BarTest.sometimesSkipped
+  ```
+
+- `json` — the full candidate objects (`classname`, `name`, `testId`,
+  `flipRatePercent`, `runsObserved`, `failCount`), useful for feeding into
+  another tool or dashboard:
+
+  ```json
+  [
+    {
+      "classname": "com.example.FooTest",
+      "name": "flaky",
+      "testId": "com.example.FooTest.flaky",
+      "flipRatePercent": 100,
+      "runsObserved": 3,
+      "failCount": 1
+    }
+  ]
+  ```
+
+- `grep` — a single regex alternation of the (escaped, de-duplicated) test
+  *names*, ready to pass to the `--grep`/`-t`/`--testNamePattern`-style
+  flag most JS test runners accept for excluding tests by title:
+
+  ```
+  (flaky|sometimesSkipped)
+  ```
+
+  ```sh
+  # example: rerun only the quarantined tests, e.g. to confirm they're
+  # still flaky before deciding whether to unquarantine them
+  vitest run --testNamePattern "$(flaky-test-detector --json-file results.json --quarantine --quarantine-format grep)"
+  ```
+
+  When nothing qualifies for quarantine, this format prints the empty
+  string — an empty pattern is not a safe stand-in for "match nothing" in
+  most regex engines, so treat an empty result as "skip nothing" and don't
+  pass it to the runner's filter flag at all.
+
 ## Library usage
 
 The parsing and detection functions are also exported for programmatic use:
@@ -170,4 +236,19 @@ import { parseJUnitDirectory, detectFlakiness } from "@kasap/flaky-test-detector
 
 const runs = await parseJUnitDirectory("./ci-results/junit");
 const report = detectFlakiness(runs);
+```
+
+The quarantine-list functions are exported too, for building custom CI
+integrations without shelling out to the CLI:
+
+```ts
+import {
+  detectFlakiness,
+  selectQuarantineCandidates,
+  formatQuarantineTextList,
+} from "@kasap/flaky-test-detector";
+
+const reports = detectFlakiness(runs);
+const candidates = selectQuarantineCandidates(reports, { minFlipRatePercent: 50 });
+console.log(formatQuarantineTextList(candidates));
 ```

@@ -98,6 +98,27 @@ describe("parseJUnitXml", () => {
     const tests = parseJUnitXml(xml);
     expect(tests).toEqual([{ classname: "", name: "noClassname", status: "passed" }]);
   });
+
+  it("treats <skipped> as taking precedence over a co-occurring <failure> or <error> child", () => {
+    // Some CI tooling emits both a <failure> (from the last attempt) and a
+    // <skipped> element (e.g. a test disabled after failing, or a retry
+    // harness that marks the case skipped once it gives up). statusOf()
+    // checks `skipped` first, so the case must be reported as "skipped",
+    // not "failed" - this is intentional (skips are excluded from
+    // flip-rate computation entirely, which is the safer default for a
+    // test that is no longer actually being exercised) but was previously
+    // undocumented by a test, so pin the behavior here.
+    const xml = `
+      <testsuite name="Suite" tests="1" failures="0">
+        <testcase classname="pkg.A" name="skippedButAlsoFailed" time="0.0">
+          <failure message="oops">trace</failure>
+          <skipped/>
+        </testcase>
+      </testsuite>
+    `;
+    const tests = parseJUnitXml(xml);
+    expect(tests).toEqual([{ classname: "pkg.A", name: "skippedButAlsoFailed", status: "skipped" }]);
+  });
 });
 
 describe("parseJUnitDirectory", () => {

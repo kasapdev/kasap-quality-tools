@@ -10,3 +10,11 @@ export { detectFlakiness, countDistinctTests, compareRunIds } from "./flakiness.
 export { parseJUnitXml, parseJUnitDirectory } from "./junit.js";
 
 export { parseJsonString, parseJsonFile } from "./jsonFormat.js";
+
+export type { QuarantineOptions, QuarantinedTest } from "./quarantine.js";
+export {
+  selectQuarantineCandidates,
+  formatQuarantineJson,
+  formatQuarantineTextList,
+  formatQuarantineGrepPattern,
+} from "./quarantine.js";
